@@ -120,9 +120,6 @@ public abstract class GenerateProtoTask extends DefaultTask {
     }
     return Utils.isTest(sourceSet.name)
   }
-  private File tempDir = getTemporaryDir()
-  private String protofilesTmpPath = tempDir.absolutePath + File.separatorChar + "protofiles.tmp"
-  private FileWriter protofilesTmp = new FileWriter(protofilesTmpPath, false)
 
   /**
    * If true, will set the protoc flag
@@ -188,20 +185,20 @@ public abstract class GenerateProtoTask extends DefaultTask {
   }
 
   List<List<String>> generateCmds(List<String> baseCmd, List<File> protoFiles, int cmdLengthLimit) {
+    File tempDir = getTemporaryDir()
+    File protofilesTmpFile = File.createTempFile("protofiles-", ".tmp", tempDir)
     List<List<String>> cmds = []
     if (!protoFiles.isEmpty()) {
       for (File proto: protoFiles) {
         String protoFileName = proto
         if (!protoFileName.endsWith(".proto")) continue
         logger.info(protoFileName)
-        protofilesTmp.append(protoFileName + "\n")
+        protofilesTmpFile.append(protoFileName + "\n")
       }
       // Add the last cmd for execution
-      def protofilesTmpPathArg = "@${protofilesTmpPath}".toString()
+      def protofilesTmpPathArg = "@${protofilesTmpFile.absolutePath}".toString()
       cmds.add(baseCmd + protofilesTmpPathArg)
     }
-    protofilesTmp.flush()
-    protofilesTmp.close()
     return cmds
   }
 
