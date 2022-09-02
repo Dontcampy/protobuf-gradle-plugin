@@ -120,6 +120,9 @@ public abstract class GenerateProtoTask extends DefaultTask {
     }
     return Utils.isTest(sourceSet.name)
   }
+  private File tempDir = getTemporaryDir()
+  private String protofilesTmpPath = tempDir.absolutePath + File.separatorChar + "protofiles.tmp"
+  private FileWriter protofilesTmp = new FileWriter(protofilesTmpPath, false)
 
   /**
    * If true, will set the protoc flag
@@ -184,29 +187,21 @@ public abstract class GenerateProtoTask extends DefaultTask {
     return prefix.toString()
   }
 
-  static List<List<String>> generateCmds(List<String> baseCmd, List<File> protoFiles, int cmdLengthLimit) {
+  List<List<String>> generateCmds(List<String> baseCmd, List<File> protoFiles, int cmdLengthLimit) {
     List<List<String>> cmds = []
     if (!protoFiles.isEmpty()) {
-      int baseCmdLength = baseCmd.sum { it.length() + CMD_ARGUMENT_EXTRA_LENGTH } as int
-      List<String> currentArgs = []
-      int currentArgsLength = 0
       for (File proto: protoFiles) {
         String protoFileName = proto
-        int currentFileLength = protoFileName.length() + CMD_ARGUMENT_EXTRA_LENGTH
-        // Check if appending the next proto string will overflow the cmd length limit
-        if (baseCmdLength + currentArgsLength + currentFileLength > cmdLengthLimit) {
-          // Add the current cmd before overflow
-          cmds.add(baseCmd + currentArgs)
-          currentArgs.clear()
-          currentArgsLength = 0
-        }
-        // Append the proto file to the args
-        currentArgs.add(protoFileName)
-        currentArgsLength += currentFileLength
+        if (!protoFileName.endsWith(".proto")) continue
+        logger.info(protoFileName)
+        protofilesTmp.append(protoFileName + "\n")
       }
       // Add the last cmd for execution
-      cmds.add(baseCmd + currentArgs)
+      def protofilesTmpPathArg = "@${protofilesTmpPath}".toString()
+      cmds.add(baseCmd + protofilesTmpPathArg)
     }
+    protofilesTmp.flush()
+    protofilesTmp.close()
     return cmds
   }
 

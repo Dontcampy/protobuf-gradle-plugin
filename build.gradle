@@ -73,6 +73,8 @@ publishing {
   publications {
     pluginMaven(MavenPublication) {
       artifact groovydocJar
+      artifact javadocJar
+      artifactId = "com.google.protobuf.gradle.plugin"
 
       pom {
         name = project.name
