@@ -35,7 +35,7 @@ apply plugin: 'com.gradle.plugin-publish'
 apply plugin: 'com.github.ben-manes.versions'
 
 group = 'com.google.protobuf'
-version = '0.9.0-SNAPSHOT'
+version = '0.9.0m5-SNAPSHOT'
 
 ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
@@ -105,6 +105,7 @@ publishing {
       artifact sourcesJar
       artifact groovydocJar
       artifact javadocJar
+      artifactId = "com.google.protobuf.gradle.plugin"
 
       pom {
         name = project.name
